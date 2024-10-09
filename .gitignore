@@ -1,2 +1,2 @@
 # Ignore .env file to prevent secret data from being tracked by Git
-.env
+creds.env
