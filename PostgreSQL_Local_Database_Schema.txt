@@ -1,0 +1,44 @@
+####################################
+# Reddit Scraping Database Schema  #
+# Policy Posse DVA                 #
+# PostgreSQL Local Server          #
+####################################
+
+###################
+# Updated 10/9/24 #
+# By: DCF         #
+###################
+
+
+
+1. Table: reddit_state_posts
+----------------------------
+- post_id       : VARCHAR (Primary Key, Not Null)
+- state         : VARCHAR (Not Null)
+- title         : TEXT (Not Null)
+- selftext      : TEXT (Nullable)
+- created_utc   : TIMESTAMP (Not Null)
+- score         : INTEGER (Nullable)
+- url           : TEXT (Nullable)
+- num_comments  : INTEGER (Nullable)
+- author        : VARCHAR (Nullable)
+
+2. Table: reddit_state_comments
+-------------------------------
+- comment_id    : VARCHAR (Primary Key, Not Null)
+- post_id       : VARCHAR (Foreign Key referencing reddit_state_posts(post_id), Not Null)
+- state         : VARCHAR (Not Null)
+- body          : TEXT (Not Null)
+- created_utc   : TIMESTAMP (Not Null)
+- score         : INTEGER (Nullable)
+- author        : VARCHAR (Nullable)
+- parent_id     : VARCHAR (Nullable)
+
+
+
+#################################
+# Notes:
+# - post_id in reddit_state_comments references post_id in reddit_state_posts.
+# - Ensure post_id is first inserted into reddit_state_posts before using it in reddit_state_comments.
+# - The relationship between posts and comments is enforced via a foreign key constraint.
+#################################
