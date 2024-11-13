@@ -1,0 +1,138 @@
+---
+title: "stateEDA"
+author: "DCF"
+date: "2024-10-30"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(tidytext)
+library(textdata)
+library(hrbrthemes)
+library(viridis)
+library(forcats)       # For reordering factors
+library(lubridate)  # for date conversion
+library(ggridges)   # for geom_density_ridges
+```
+
+## R Markdown
+
+
+```{r dataLoad}
+
+# =============================================================================
+# ## Load and Preprocess Data
+# =============================================================================
+# Load cleaned comments and posts data
+comments <- read.csv("reddit_comments_cleaned.csv")
+posts <- read.csv("reddit_posts.csv")
+
+# Convert `created_utc` from Unix timestamp to Date
+comments$created <- as.POSIXct(comments$created_utc, origin = "1970-01-01", tz = "UTC")
+posts$created <- as.POSIXct(posts$created_utc, origin = "1970-01-01", tz = "UTC")
+
+# Filter to focus on Vermont and Kentucky subreddits only
+comments <- comments %>% filter(state %in% c("vermont", "kentucky"))
+posts <- posts %>% filter(state %in% c("vermont", "kentucky"))
+
+# =============================================================================
+# ## Exploratory Data Analysis
+# =============================================================================
+
+# Total Comments per Day
+ggplot(data = posts, aes(x = created, y = num_comments, color = state)) +
+  geom_line(size = 0.5, color = 'black') +
+  geom_smooth(se = FALSE, alpha = 0.4, size = 0.8) +
+  labs(title = "Total Comments Per Day by State Subreddit") +
+  facet_wrap(~state) +
+  theme_minimal() +
+  scale_color_viridis_d()
+
+# Upvotes in Comments over Time
+comment_upvotes <- comments %>%
+  group_by(state, created) %>%
+  summarize(total_upvotes = sum(score), .groups = 'drop')
+
+ggplot(data = comment_upvotes, aes(x = created, y = total_upvotes, color = state)) +
+  geom_line(size = 0.5) +
+  geom_smooth(se = FALSE, alpha = 0.4, size = 0.8) +
+  labs(title = "Total Upvotes in Comments by Date and State Subreddit") +
+  facet_wrap(~state) +
+  theme_minimal() +
+  scale_color_viridis_d()
+
+# =============================================================================
+# ## Sentiment Analysis
+# =============================================================================
+
+# Load Sentiment Libraries
+nrc <- get_sentiments("nrc")
+afinn <- get_sentiments("afinn")
+
+# Tokenize words, filter stop words, and retain date information
+comment_words <- comments %>%
+  unnest_tokens(word, body) %>%
+  anti_join(stop_words, by = "word") %>%
+  select(state, created, word)
+
+# Join with NRC sentiment data to get sentiment labels for each word
+comment_sentiment <- comment_words %>%
+  inner_join(nrc, by = "word")
+
+# Sentiment distribution over time by state subreddit
+ggplot(comment_sentiment, aes(x = created, y = sentiment, fill = sentiment)) +
+  geom_density_ridges(alpha = 0.8, scale = 0.8, rel_min_height = 0.01) +
+  facet_wrap(~state) +
+  scale_fill_viridis_d() +
+  labs(title = "Sentiment Distribution by Date and State Subreddit") +
+  theme_ridges()
+
+# =============================================================================
+# ## Allotaxonometry Comparison Function
+# =============================================================================
+
+allotax <- function(data, state1, state2) {
+  # Filter for each state
+  state1_data <- data %>% filter(state == state1)
+  state2_data <- data %>% filter(state == state2)
+  
+  # Rank words for each state
+  state1_words <- state1_data %>%
+    count(word) %>%
+    mutate(rank = rank(-n))
+  
+  state2_words <- state2_data %>%
+    count(word) %>%
+    mutate(rank = rank(-n))
+  
+  # Merge the two sets to calculate rank turbulence
+  merged_data <- state1_words %>%
+    inner_join(state2_words, by = "word", suffix = c(".state1", ".state2"))
+  
+  merged_data <- merged_data %>%
+    mutate(rank_turbulence = abs(log(rank.state1 / rank.state2))) %>%
+    arrange(desc(rank_turbulence))
+  
+  # Plotting the rank turbulence
+  ggplot(merged_data[1:30, ], aes(x = reorder(word, rank_turbulence), y = rank_turbulence, fill = rank_turbulence)) +
+    geom_col() +
+    geom_text(aes(label = word), hjust = -0.1) +
+    coord_flip() +
+    theme_minimal() +
+    labs(
+      title = paste("Allotaxonometric Comparison:", state1, "vs", state2),
+      x = "Word",
+      y = "Rank Turbulence"
+    ) +
+    scale_fill_viridis_c(option = "C")
+}
+
+# Generate allotaxonometry comparison plot
+allotax(comment_words, "vermont", "kentucky")
+
+```

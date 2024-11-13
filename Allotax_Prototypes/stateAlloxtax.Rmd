@@ -1,0 +1,406 @@
+---
+title: "stateAllotax"
+author: "DCF"
+date: "2024-10-30"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)      # For date manipulation
+library(tidyverse)      # For data manipulation and visualization
+library(tidytext)       # For text mining
+library(textdata)       # For sentiment lexicons
+library(ggplot2)        # For plotting
+library(ggrepel)        # For better text labels
+library(hrbrthemes)     # For themes like theme_ft_rc()
+library(ggthemes)       # For scale_color_fivethirtyeight()
+library(viridis)        # For color scales
+library(forcats)        # For factor reordering
+library(rayshader)      # For 3D rendering
+library(stopwords)      # For comprehensive stop word lists
+library(scales)
+```
+
+
+## State Alloxtax V1
+
+```{r dataLoad}
+
+# =============================================================================
+# ## Load and Preprocess Data
+# =============================================================================
+# Load cleaned comments data
+comments <- read.csv("reddit_comments_cleaned.csv")
+
+# Convert `created_utc` from Unix timestamp to Date
+comments$created <- as.POSIXct(comments$created_utc, origin = "1970-01-01", tz = "UTC")
+
+# =============================================================================
+# ## Define Allotaxonometry Function for State Over Time
+# =============================================================================
+allotax_state_time <- function(comments_data, state_name, split_date, top_n = 30) {
+  # Convert split_date to Date
+  split_date <- as.Date(split_date)
+  
+  # Filter data for the specified state
+  state_comments <- comments_data %>% filter(state == state_name)
+  
+  # Tokenize and prepare word counts
+  comment_words <- state_comments %>%
+    unnest_tokens(word, body) %>%
+    filter(!str_detect(word, "^[0-9]+$")) %>%  # Remove numbers
+    anti_join(get_stopwords(), by = "word") %>%
+    select(created, word)
+  
+  # Split data into two halves based on split_date
+  comment_words <- comment_words %>%
+    mutate(half = if_else(created <= split_date, "First Half", "Second Half"))
+  
+  # Tally word counts per half
+  comment_word_counts <- comment_words %>%
+    group_by(half, word) %>%
+    tally(name = "n")
+  
+  # Calculate word ranks within each half
+  word_ranks <- comment_word_counts %>%
+    group_by(half) %>%
+    arrange(desc(n)) %>%
+    mutate(rank = row_number())
+  
+  # Split data into two halves
+  first_half <- word_ranks %>% filter(half == "First Half")
+  second_half <- word_ranks %>% filter(half == "Second Half")
+  
+  # Merge the two halves on 'word'
+  merged_data <- first_half %>%
+    inner_join(second_half, by = "word", suffix = c(".first", ".second"))
+  
+  # Calculate rank turbulence divergence
+  merged_data <- merged_data %>%
+    mutate(
+      rank_turbulence = abs(log(rank.first / rank.second)),
+      rank_turbulence_ps = log(rank.first / rank.second),
+      rank_text_location = if_else(rank_turbulence_ps > 0, -1, 1),
+      rank_text = paste(rank.first, "-->", rank.second)
+    )
+  
+  # Prepare data for plotting
+  top_merged_data <- merged_data %>%
+    arrange(desc(rank_turbulence)) %>%
+    slice(1:top_n) %>%
+    mutate(word = fct_reorder(word, rank_turbulence))
+  
+  # Create plot
+  plot <- ggplot(top_merged_data, aes(x = word, y = rank_turbulence_ps, fill = rank_turbulence_ps)) +
+    geom_col(alpha = 0.8) +
+    geom_text(
+      aes(label = word),
+      size = 3,
+      position = position_stack(vjust = 0.5),
+      color = 'white'
+    ) +
+    geom_text(
+      aes(x = word, y = rank_text_location, label = rank_text, color = factor(rank_text_location)),
+      size = 3
+    ) +
+    coord_flip() +
+    theme_ft_rc(base_family = "Arial") +
+    theme(
+      legend.position = 'none',
+      axis.text.y = element_blank()
+    ) +
+    scale_fill_viridis_c(option = "C", guide = 'none') +
+    scale_color_manual(values = c("-1" = "red", "1" = "blue"), guide = 'none') +
+    labs(
+      title = paste("", state_name, "| Before and After", format(split_date, "%Y-%m-%d")),
+      x = "Word",
+      y = "Rank Difference"
+    )
+  
+  return(plot)
+}
+
+# =============================================================================
+# ## Generate and Render Plot for a Specific State
+# =============================================================================
+# Set the split date (adjust as needed)
+split_date <- Sys.Date() - months(3)  # 6 months ago from today
+
+# Function to generate and render the plot for a given state
+generate_state_plot <- function(state_name) {
+  state_plot <- allotax_state_time(comments, state_name, split_date)
+  
+  # Render with rayshader
+  plot_gg(
+    state_plot,
+    width = 7,
+    height = 7,
+    multicore = TRUE,
+    scale = 250,
+    zoom = 0.8,
+    theta = 10,
+    phi = 30,
+    windowsize = c(1200, 1200)
+  )
+  Sys.sleep(0.2)
+  render_snapshot(clear = FALSE)
+}
+
+
+```
+
+
+```{r plotGen}
+# To generate and render the plot for Vermont
+generate_state_plot("vermont")
+
+# To generate and render the plot for Kentucky
+generate_state_plot("kentucky")
+
+```  
+
+
+
+```{r stateCompare}
+
+# =============================================================================
+# ## Define Allotaxonometry Function with Standardization
+# =============================================================================
+allotax_compare_states_standardized <- function(comments_data, state1_name, state2_name, top_n = 30) {
+  # Filter data for the specified states
+  comments_filtered <- comments_data %>% filter(state %in% c(state1_name, state2_name))
+  
+  # Tokenize and prepare word counts
+  comment_words <- comments_filtered %>%
+    unnest_tokens(word, body) %>%
+    filter(!str_detect(word, "^[0-9]+$")) %>%  # Remove numbers
+    anti_join(get_stopwords(), by = "word") %>%
+    select(state, word)
+  
+  # Tally total word counts per state
+  total_words_per_state <- comment_words %>%
+    group_by(state) %>%
+    summarise(total_words = n(), .groups = 'drop')
+  
+  # Tally word counts per state and calculate relative frequencies
+  comment_word_counts <- comment_words %>%
+    group_by(state, word) %>%
+    tally(name = "n") %>%
+    left_join(total_words_per_state, by = "state") %>%
+    mutate(relative_freq = n / total_words)
+  
+  # Calculate word ranks based on relative frequencies within each state
+  word_ranks <- comment_word_counts %>%
+    group_by(state) %>%
+    arrange(desc(relative_freq)) %>%
+    mutate(rank = row_number())
+  
+  # Split data for each state
+  state1_data <- word_ranks %>% filter(state == state1_name)
+  state2_data <- word_ranks %>% filter(state == state2_name)
+  
+  # Merge the two states on 'word'
+  merged_data <- state1_data %>%
+    inner_join(state2_data, by = "word", suffix = c(".state1", ".state2"))
+  
+  # Calculate rank turbulence divergence
+  merged_data <- merged_data %>%
+    mutate(
+      rank_turbulence = abs(log(rank.state1 / rank.state2)),
+      rank_turbulence_ps = log(rank.state1 / rank.state2),
+      rank_text_location = if_else(rank_turbulence_ps > 0, -1, 1),
+      rank_text = paste(rank.state1, "-->", rank.state2)
+    )
+  
+  # Prepare data for plotting
+  top_merged_data <- merged_data %>%
+    arrange(desc(rank_turbulence)) %>%
+    slice(1:top_n) %>%
+    mutate(word = fct_reorder(word, rank_turbulence))
+  
+  # Create plot
+  plot <- ggplot(top_merged_data, aes(x = word, y = rank_turbulence_ps, fill = rank_turbulence_ps)) +
+    geom_col(alpha = 0.8) +
+    geom_text(
+      aes(label = word),
+      size = 3,
+      position = position_stack(vjust = 0.5),
+      color = 'white'
+    ) +
+    geom_text(
+      aes(x = word, y = rank_text_location, label = rank_text, color = factor(rank_text_location)),
+      size = 3
+    ) +
+    coord_flip() +
+    theme_ft_rc(base_family = "Arial") +
+    theme(
+      legend.position = 'none',
+      axis.text.y = element_blank()
+    ) +
+    scale_fill_viridis_c(option = "C", guide = 'none') +
+    scale_color_manual(values = c("-1" = "red", "1" = "blue"), guide = 'none') +
+    labs(
+      title = paste("Standardized Allotaxonometry Comparison:", state1_name, "vs", state2_name),
+      x = "Word",
+      y = "Rank Difference"
+    )
+  
+  return(plot)
+}
+
+
+# =============================================================================
+# ## Generate and Render Standardized Plot Comparing Vermont and Kentucky
+# =============================================================================
+generate_comparison_plot_standardized <- function(state1_name, state2_name) {
+  comparison_plot <- allotax_compare_states_standardized(comments, state1_name, state2_name)
+  
+  # Render with rayshader
+  plot_gg(
+    comparison_plot,
+    width = 7,
+    height = 7,
+    multicore = TRUE,
+    scale = 250,
+    zoom = 0.8,
+    theta = 10,
+    phi = 30,
+    windowsize = c(1200, 1200)
+  )
+  Sys.sleep(0.2)
+  render_snapshot(clear = FALSE)
+}
+
+# Generate and render the standardized plot
+generate_comparison_plot_standardized("vermont", "kentucky")
+```
+
+
+
+```{r sentiment, warning = FALSE}
+# =============================================================================
+# Load and Preprocess Data
+# =============================================================================
+comments <- read.csv("reddit_comments_cleaned.csv")
+
+comments$created <- as.POSIXct(comments$created_utc, origin = "1970-01-01", tz = "UTC")
+comments$date <- as.Date(comments$created)
+comments$state <- as.factor(comments$state)
+
+# Filter for Vermont and Kentucky
+comments_filtered <- comments %>%
+  filter(state %in% c("vermont", "kentucky"))
+
+# =============================================================================
+# Tokenize Text and Remove Stop Words
+# =============================================================================
+comment_words <- comments_filtered %>%
+  unnest_tokens(word, body) %>%
+  anti_join(get_stopwords(), by = "word")
+
+# =============================================================================
+# Join with NRC Sentiment Lexicon
+# =============================================================================
+nrc <- get_sentiments("nrc")
+
+comment_emotions <- comment_words %>%
+  inner_join(nrc, by = "word")
+
+# =============================================================================
+# Calculate Emotion Counts Over Time
+# =============================================================================
+# Aggregate by month
+comment_emotions <- comment_emotions %>%
+  mutate(month = floor_date(date, unit = "month"))
+
+# Calculate count of each emotion per state per month
+emotion_counts <- comment_emotions %>%
+  group_by(state, month, sentiment) %>%
+  summarise(count = n(), .groups = 'drop')
+
+# Calculate total emotion words per state per month
+total_emotion_words <- comment_emotions %>%
+  group_by(state, month) %>%
+  summarise(total_emotion_words = n(), .groups = 'drop')
+
+# Merge total counts with emotion counts
+emotion_counts_normalized <- emotion_counts %>%
+  left_join(total_emotion_words, by = c("state", "month")) %>%
+  mutate(proportion = count / total_emotion_words)
+
+# Filter for basic emotions
+basic_emotions <- c("anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust")
+
+emotion_counts_normalized <- emotion_counts_normalized %>%
+  filter(sentiment %in% basic_emotions)
+
+# =============================================================================
+# Create Density Plots Faceted by Emotion
+# =============================================================================
+# Plot density plots of emotion proportions, faceted by emotion, colored by state
+ggplot(emotion_counts_normalized, aes(x = proportion, fill = state)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~ sentiment, scales = "free") +
+  theme_minimal() +
+  scale_fill_manual(values = c("vermont" = "#1f77b4", "kentucky" = "#ff7f0e")) +
+  labs(
+    title = "Distribution of Emotion Proportions by State",
+    x = "Proportion of Emotion Words",
+    y = "Density"
+  )
+
+
+ggplot(emotion_counts_normalized, aes(x = state, y = proportion, fill = state)) +
+  geom_violin(alpha = 0.5, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(~ sentiment, scales = "free") +
+  theme_minimal() +
+  scale_fill_manual(values = c("vermont" = "#1f77b4", "kentucky" = "#ff7f0e")) +
+  labs(
+    title = "Violin Plots of Emotion Proportions by State",
+    x = "State",
+    y = "Proportion of Emotion Words"
+  ) +
+  theme(legend.position = "none")
+
+
+# Load ggridges if not already loaded
+library(ggridges)
+
+# =============================================================================
+# Plot Line Graph with Filled Area Over Time
+# =============================================================================
+# Assuming you have already loaded and preprocessed your data up to emotion_counts_normalized
+
+# Standardize the proportions within each emotion
+emotion_counts_standardized <- emotion_counts_normalized %>%
+  group_by(sentiment) %>%
+  mutate(
+    mean_prop = mean(proportion, na.rm = TRUE),
+    sd_prop = sd(proportion, na.rm = TRUE),
+    standardized_prop = (proportion - mean_prop) / sd_prop
+  )
+
+# Plot the standardized proportions
+ggplot(emotion_counts_standardized, aes(x = month, y = standardized_prop, color = state, fill = state)) +
+  geom_line(size = 1) +
+  facet_wrap(~ sentiment, scales = "free_y") +
+  theme_ft_rc() +
+  scale_color_manual(values = c("vermont" = "#1f77b4", "kentucky" = "#ff7f0e")) +
+  labs(
+    title = "Standardized Emotion Proportions Over Time by State",
+    x = "Month",
+    y = "Standardized Proportion (Z-score)"
+  ) +
+  theme(
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+
+
+
+
+
+

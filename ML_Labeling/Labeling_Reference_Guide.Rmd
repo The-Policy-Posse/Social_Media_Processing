@@ -1,0 +1,373 @@
+---
+title: "Policy Topic Labeling Reference Guide"
+author: "Political Compass Research Team"
+date: "2024-11-12"
+output: pdf_document
+header-includes:
+   - \usepackage{xcolor}
+   - \usepackage{sectsty}
+   - \usepackage{graphicx}
+   - \definecolor{peachpuff}{RGB}{255, 218, 185}
+   - \definecolor{salmon}{RGB}{250, 128, 114}
+   - \definecolor{thistle}{RGB}{216, 191, 216}
+   - \definecolor{lightpink}{RGB}{255, 182, 193}
+   - \definecolor{lightgreen}{RGB}{144, 238, 144}
+   - \definecolor{lightcoral}{RGB}{240, 128, 128}
+   - \definecolor{lightblue}{RGB}{173, 216, 230}
+   - \definecolor{lightgoldenrodyellow}{RGB}{250, 250, 210}
+   - \definecolor{paleturquoise}{RGB}{175, 238, 238}
+   - \definecolor{gray}{RGB}{128, 128, 128}
+   - \newcommand{\colorbullet}[1]{\textcolor{#1}{\scalebox{4}{\textbullet}}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+
+
+```
+
+
+
+# Welcome to the Policy Area Reference Guide
+
+Welcome to the **Political Compass Categorization Team**! This guide is not only a training document but also a vital reference for our labeling work, which plays an important role in analyzing political representation. Through our work, we aim to map and analyze key policy areas reflected in recent Congressional sessions, enabling insights into how political messaging on social media aligns with legislative activity.
+
+## Purpose and Impact of the Policy Area Labeling Project
+
+### Project Goals and Usage
+
+Our project centers on **categorizing posts and comments by policy area**. By associating political discourse with specific policy topics, we can identify trends, emerging concerns, and shifts in public focus.  These are then mapped to the specific bills individual congress members are on, and their individual effectiveness, to determine if they are representing the interests of their social online communities.  This will all be funnel into an interactive map dashboard. Here’s an overview of how your contributions fit into the broader goals:
+
+1. **Understanding Representation**: Each label you apply to a post or comment reflects a specific policy area—like Health, Education, or the Environment—mirroring real-world legislative topics. This connection helps us assess whether there is alignment or disconnect between what constituents are talking about online and the bills currently being proposed or debated in Congress.
+
+2. **Trend Analysis**: Over time, we will accumulate labeled data that enables us to track the popularity and intensity of various policy areas in social media discourse. By comparing these trends with Congressional data, we gain a better understanding of how public interest in different topics aligns with, or diverges from, legislative efforts.
+
+3. **Assessing Politicians’ Alignment with Public Interests**: In the end, our analysis aims to answer the question: **Are politicians representing their constituents’ true interests?** By linking online discussions to Congressional activities, we can develop a clearer picture of whether elected officials are addressing the issues their constituents care about or if certain topics are neglected.
+
+### How This Will Be Used
+
+Each category you see in this guide has been carefully data-mined from legislative topics in recent Congressional sessions, ensuring relevance to today’s political climate. We’ve organized policy areas into **color-coded categories** to make it easy for you to identify and apply the appropriate label quickly.
+
+Here’s a step-by-step look at what you’ll be doing and how it contributes to the larger project:
+
+- **Data Labeling**: As you label each post or comment, you’re essentially tagging it with the policy area it pertains to. This labeling is a first step in structuring our dataset, allowing us to perform in-depth analyses and fine tune our machine learning models.  It's the soul of the model.  
+
+
+- **Data Aggregation and Analysis**: Once the labeling is complete, our team will aggregate the data, examining which topics are most prevalent in public discourse. This aggregation will form the basis of our analysis on whether social media sentiment aligns with policy focus in Congress.  
+
+
+- **Long-Term Policy Insights**: In the end, we hope to create a comprehensive policy report or dashboard, illustrating these connections. Our findings could support advocacy efforts, influence policy research, or provide insights into voter sentiment for policymakers and the public alike.  
+
+
+This project’s success hinges on the accuracy and consistency of your labels, which is why this guide is here to assist you. By ensuring each post or comment is categorized correctly, you’re making it possible for us to provide meaningful insights into political representation and constituent interests.   
+
+ 
+ 
+# General Instructions
+
+To ensure consistency and accuracy in your labeling, please adhere to the following guidelines:  
+
+1. **Don't be too critical:** Since these are online posts and comments, many may not directly scream out a 'policy' topic.  That's the whole point of this labeling -- can we infer that they are talking about a general subject.  
+
+2. **Review Thoroughly:** Carefully read the entire content of each post or comment before assigning a label.  
+
+3. **Select the Most Relevant Label:** Choose the policy area that best represents the main topic of the content.  
+
+4. **Handle Ambiguity Appropriately:** If the content does not clearly fit into any specific category, select **"Other / Uncategorized."**  
+
+5. **Primary Focus:** If multiple topics are present, prioritize the primary one that best encapsulates the content's main theme.  
+
+6. **Use Tooltips:** Hover over each label in Label Studio to view a summary of its scope and use this as a quick reference.  
+
+7. **Speed:** Don't spend too long on any one post or comment!  If you are unsure you can click Skip! 
+
+\newpage
+
+
+---
+
+# Policy Area Categories
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{red} \hspace{1em} \LARGE Health and Healthcare \hspace{1em} \colorbullet{red}}
+\end{center}
+
+**Description:**  
+Topics related to health, healthcare services, public health initiatives, and medical research.
+
+**Includes:**  
+
+- Public health policies
+- Healthcare funding and access
+- Medical research and innovation
+- Health insurance regulations
+
+**Example:**  
+*"Another public hospital closes in Montana, the third this year."*
+
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{orange} \hspace{1em} \LARGE Defense and National Security \hspace{1em} \colorbullet{orange}}
+\end{center}
+**Description:**  
+Covers armed forces, national defense, homeland security, and military policies.
+
+**Includes:**
+- Military funding and procurement
+- Defense strategies and policies
+- Homeland security measures
+- Veteran affairs
+
+**Example:**  
+*"I'm worried that China may come and steal my goats in the night, is that possible?  Do they like goats?"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{blue} \hspace{1em} \LARGE Crime and Law Enforcement \hspace{1em} \colorbullet{blue}}
+\end{center}
+**Description:**  
+Includes crime prevention, law enforcement, policing, and emergency management.
+
+**Includes:**
+- Police funding and reform
+- Criminal justice policies
+- Emergency response protocols
+- Crime statistics and prevention programs
+
+**Example:**  
+*"Third officer arrested in New York this week on corruption charges."*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{peachpuff} \hspace{1em} \LARGE International Affairs and Trade \hspace{1em} \colorbullet{peachpuff}}
+\end{center}
+**Description:**  
+Focuses on international relations, foreign trade, diplomacy, and international finance.
+
+**Includes:**
+- Trade agreements and tariffs
+- Diplomatic relations
+- International aid and development
+- Global economic policies
+
+**Example:**  
+*"Vermont tightens boarder regulations with Canada, will maple syrup prices go up?"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{green} \hspace{1em} \LARGE Government Operations and Politics \hspace{1em} \colorbullet{green}}
+\end{center}
+*Description:**  
+Topics on government operations, legislation, law, political processes, and congressional matters.
+
+**Includes:**
+- Legislative procedures
+- Government budgeting and spending
+- Political reforms
+- Electoral processes
+
+**Example:**  
+*"State congress motions for unlimited snack budget"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{salmon} \hspace{1em} \LARGE Economy and Finance \hspace{1em} \colorbullet{salmon}}
+\end{center}
+**Description:**  
+Encompasses topics related to the financial stability, economic growth, labor policies, and trade practices that impact citizens' day-to-day lives and the overall economy.
+
+**Includes:**
+- Taxation and fiscal policy
+- Economic growth and development initiatives
+- Commerce and trade regulations
+- Employment and labor policies
+- Financial markets and regulations
+- Inflation and interest rate policies
+
+**Example:**  
+*"If our property taxes go up again this year, I'm moving to the moon.  I mean it this time, Elon is really making progress on the moon."*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{thistle} \hspace{1em} \LARGE Environment and Natural Resources \hspace{1em} \colorbullet{thistle}}
+\end{center}
+**Description:**  
+Covers environmental protection, natural resources, energy, and water resource management.
+
+**Includes:**
+- Renewable energy initiatives
+- Conservation efforts
+- Water resource management
+- Climate change policies
+
+**Example:**  
+*"Historic flood washes away brand new solar panel installations."*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{lightpink} \hspace{1em} \LARGE Education and Social Services \hspace{1em} \colorbullet{lightpink}}
+\end{center}
+**Description:**  
+Covers education, social welfare, housing, family support, and social sciences.
+
+**Includes:**
+- Public education funding
+- Social welfare programs
+- Housing policies
+- Family support services
+
+**Example:**  
+*"Affordable housing is impossible to find right now in our state!"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{lightgreen} \hspace{1em} \LARGE Agriculture and Food \hspace{1em} \colorbullet{lightgreen}}
+\end{center}
+**Description:**  
+Includes agriculture, farming policies, food production, and food safety.
+
+**Includes:**
+- Agricultural subsidies
+- Food safety regulations
+- Sustainable farming practices
+- Rural development
+
+**Example:**  
+*"Organic farming takes a big hit this year, due to the wow-crop-delicious insect boom"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{lightcoral} \hspace{1em} \LARGE Science, Technology, and Communications \hspace{1em} \colorbullet{lightcoral}}
+\end{center}
+**Description:**  
+Topics on scientific research, technological advancements, and communication systems.
+
+**Includes:**
+- Research and development funding
+- Technology infrastructure
+- Telecommunications regulations
+- Innovation policies
+
+**Example:**  
+*"Comcast sues small family local owned telephone maker in Florida"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{lightblue} \hspace{1em} \LARGE Immigration and Civil Rights \hspace{1em} \colorbullet{lightblue}}
+\end{center}
+**Description:**  
+Focuses on immigration policies, civil rights, minority issues, and Native American matters.
+
+**Includes:**
+- Immigration reform
+- Civil liberties protections
+- Minority rights
+- Native American affairs
+
+**Example:**  
+*"This is crazy, my son can't even get a job at Fast Food Express due to the recent influx of Swedish Meatball Farmers from Portugal"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{lightgoldenrodyellow} \hspace{1em} \LARGE Transportation and Infrastructure \hspace{1em} \colorbullet{lightgoldenrodyellow}}
+\end{center}
+**Description:**  
+Covers transportation systems, public works, and infrastructure development.
+
+**Includes:**
+- Public transportation funding
+- Infrastructure projects
+- Transportation safety regulations
+- Urban planning
+
+**Example:**  
+*"I swear to god if they don't fix these potholes I'm going to write another strongly written letter"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{paleturquoise} \hspace{1em} \LARGE Culture and Recreation \hspace{1em} \colorbullet{paleturquoise}}
+\end{center}
+**Description:**  
+Includes arts, culture, religion, sports, recreational activities, and animal-related topics.
+
+**Includes:**
+- Arts funding and grants
+- Cultural heritage preservation
+- Recreational facilities
+- Animal welfare policies
+
+**Example:**  
+*"I love these moose.  I'm so glad we can own 5 now legally"*
+
+---
+
+\begin{center}
+\makebox[\textwidth]{\colorbullet{gray} \hspace{1em} \LARGE Other / Uncategorized \hspace{1em} \colorbullet{gray}}
+\end{center}
+**Description:**  
+Use this label if the content does not fit into any specific category or is uncategorized.
+
+**Includes:**
+- Miscellaneous topics not covered by other categories
+- Ambiguous or unclear content
+
+**Example:**  
+*"The post discusses personal opinions on various unrelated topics without a clear topic focus."*
+
+
+# Tips for Efficient Labeling
+
+To enhance your labeling efficiency and accuracy, consider the following tips:
+
+- **Skim First:** Quickly read through the content to grasp the overall context before assigning a label.
+- **Use Tooltip Hints:** Leverage the tooltip descriptions in Label Studio for a quick understanding of each category’s focus.
+- **Re-read if Necessary:** If the content is complex or ambiguous, read it multiple times to ensure correct labeling.
+- **Prioritize Primary Topics:** When multiple topics are present, identify and label the primary focus of the content.
+- **Stay Consistent:** Apply the same criteria across all labeling tasks to maintain uniformity in the dataset.
+
+---
+
+# Common Pitfalls and FAQs
+
+**Q1: What if a post contains multiple policy areas?**  
+*A1: Identify the primary topic that best represents the main focus of the content and label accordingly.*
+
+**Q2: How to handle sarcastic or ironic posts?**  
+*A2: Focus on the apparent topic rather than the tone. Label based on the content's subject matter.*
+
+**Q3: What if the policy area is evolving or new?**  
+*A3: Use the **"Other / Uncategorized"** label and report the new topic to the project lead for potential category updates.*
+
+**Q4: How detailed should my label be?**  
+*A4: Select the most specific applicable category from the provided list. Avoid over-categorizing.*
+
+**Q5: Can I suggest new categories?**  
+*A5: Yes, please document any recurring topics that do not fit existing categories and inform the project lead for possible inclusion.*
+
+---
+
+# Contact and Support
+
+If you encounter any issues, have questions, or need further clarification, please reach out to the project team:
+
+- **Technical Support:** Daniel Forcade  
+  **Email:** dforcade@gatech.edu    
+  **github:** github.com/rundowntown
+  
+  
+  

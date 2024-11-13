@@ -1,0 +1,96 @@
+---
+title: "Bill_Info_SQL"
+author: "DCF"
+date: "2024-11-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DBI)
+library(RPostgres)
+library(dplyr)
+library(tidyr)
+library(stringr)
+```
+
+
+
+```{r dataLoad}
+
+## Define PostgreSQL connection parameters
+user <- 'dforcade'
+password <- 'reachforthesky'
+host <- '127.0.0.1'
+port <- '5433'
+dbname <- 'PolicyPosse-DB'
+
+## Connect to the database
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = dbname,
+  host = host,
+  port = port,
+  user = user,
+  password = password
+)
+
+## Load the 'bill_info_full' table into R
+bill_info_full <- dbReadTable(con, "bill_info_full")
+
+dbDisconnect(con)
+
+```  
+
+
+```{r policyPull}
+
+# Filter for congress = 118
+bill_info_118 <- bill_info_full %>%
+  filter(congress == 118)
+
+# Get unique values for policy_area_texts with counts
+policy_area_counts <- bill_info_118 %>%
+  count(policy_area_texts, sort = TRUE)  # Counts occurrences and sorts by count
+
+# Get counts for unique subject_texts, cleaning whitespace
+subject_text_counts <- bill_info_118 %>%
+  select(subject_texts) %>%
+  separate_rows(subject_texts, sep = ";") %>%  # Separate items by ';'
+  mutate(subject_texts = str_trim(subject_texts)) %>%  # Trim whitespace
+  count(subject_texts, sort = TRUE)  # Counts occurrences and sorts by count
+
+# Display the results
+policy_area_counts
+subject_text_counts
+
+
+
+# List of U.S. state names to search for
+states <- c("Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", 
+            "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", 
+            "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", 
+            "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", 
+            "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
+            "New Hampshire", "New Jersey", "New Mexico", "New York", 
+            "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", 
+            "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+            "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", 
+            "West Virginia", "Wisconsin", "Wyoming")
+
+# Filter and clean subject_texts, adding state names
+state_subject_text_counts <- bill_info_118 %>%
+  select(subject_texts) %>%
+  separate_rows(subject_texts, sep = ";") %>%  # Split by ';'
+  mutate(subject_texts = str_trim(subject_texts)) %>%  # Trim whitespace
+  filter(str_detect(subject_texts, paste(states, collapse = "|"))) %>%  # Filter by state names
+  mutate(states_involved = str_extract_all(subject_texts, paste(states, collapse = "|"))) %>%  # Extract states
+  unnest(states_involved) %>%  # Expand the list of states into rows
+  count(subject_texts, states_involved, sort = TRUE)  # Count occurrences of each unique subject with state
+
+# Display the dataset with subjects and associated states
+state_subject_text_counts
+
+```  
+
+

@@ -1,0 +1,102 @@
+---
+title: "Reddit_Comments_Labeling_Check"
+author: "DCF"
+date: "2024-11-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(httr)
+library(stringr)
+library(textstem)
+```  
+
+
+```{r dataLoad}
+## Load Data
+myPosts <- fread('reddit_posts.csv')
+myComments <- fread('reddit_comments.csv')
+
+```  
+
+```{r labelTest}
+# Define image extensions
+image_extensions <- c("jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp")
+
+# Create 'image_url' column only for posts with valid image URLs
+myPosts[, image_url := ifelse(
+  tolower(tools::file_ext(url)) %in% image_extensions & grepl("^https://", url),
+  paste0("https://storage.googleapis.com/policy_posse_reddit_images/reddit_post_images/", post_id, ".jpg"),
+  NA_character_
+)]
+
+# Define the path to the directory containing downloaded images
+image_dir <- "./reddit_post_images"
+
+# List all images in the directory
+downloaded_images <- list.files(image_dir, pattern = "\\.jpg$", full.names = FALSE)
+downloaded_post_ids <- sub("\\.jpg$", "", downloaded_images)
+
+# Make a copy of the original image_url column
+myPosts[, original_image_url := image_url]
+
+# Update image_url column to NA if the image does not exist
+myPosts[, image_url := ifelse(post_id %in% downloaded_post_ids, image_url, NA_character_)]
+
+# Filter rows where the image_url was changed to NA
+changed_to_na <- myPosts[is.na(image_url) & !is.na(original_image_url)]
+
+# Print the changed rows
+print(changed_to_na)
+
+
+```  
+
+
+
+```{r policyView}
+  
+
+# Apply stemming or lemmatization to the text fields
+myPosts[, title := lemmatize_strings(title)]
+myPosts[, selftext := lemmatize_strings(selftext)]
+
+## Keywords List
+keywords <- list(
+    Health = c("health", "healthcare", "medicine", "hospital", "insurance", "pharma", "mental", "doctor", "nurse", "public", "epidemic", "pandemic", "drug", "medical", "therapy", "treatment", "disease", "illness"),
+    `Defense and National Security` = c("military", "defense", "security", "troop", "veteran", "terror", "homeland", "army", "navy", "air", "national", "weapon", "missile", "nuclear", "warfare", "intelligence", "cybersecurity", "safety"),
+    `Crime and Law Enforcement` = c("crime", "law", "enforcement", "police", "justice", "criminal", "prison", "detention", "arrest", "court", "trial", "convict", "offense", "homicide", "fraud", "investigation", "penalty"),
+    `International Affairs and Trade` = c("foreign", "policy", "trade", "diplomacy", "international", "UN", "NATO", "treaty", "sanction", "global", "export", "import", "alliance", "embassy", "aid", "relief", "agreement"),
+    `Government Operations and Politics` = c("government", "congress", "senate", "election", "legislation", "bill", "representative", "senator", "campaign", "politician", "policy", "party", "judiciary", "executive", "law", "reform", "constitution"),
+    `Economy and Finance` = c("tax", "finance", "economy", "job", "budget", "inflation", "recession", "interest", "stock", "invest", "employment", "debt", "growth", "fiscal", "trade", "money", "corporate", "loan", "banking"),
+    `Environment and Natural Resources` = c("environment", "climate", "pollution", "conservation", "natural", "resource", "wildlife", "global warming", "sustainable", "ecology", "biodiversity", "forest", "ocean", "habitat", "carbon", "emission", "renewable", "ecosystem"),
+    `Education and Social Services` = c("education", "school", "welfare", "housing", "family", "social service", "student", "teacher", "curriculum", "tuition", "public school", "childcare", "university", "scholarship", "training", "youth"),
+    `Agriculture and Food` = c("agriculture", "farming", "food", "crop", "farmer", "agri", "harvest", "grain", "dairy", "livestock", "fisheries", "pest", "soil", "rural", "produce", "meat", "fishery"),
+    `Science, Technology, and Communications` = c("science", "technology", "research", "innovation", "communication", "internet", "AI", "data", "digital", "cyber", "robotic", "scientific", "satellite", "software", "computer", "telecom", "biotech"),
+    `Immigration and Civil Rights` = c("immigration", "civil right", "liberty", "equality", "minority", "racial", "refugee", "border", "asylum", "human right", "citizen", "diversity", "integration", "deportation"),
+    `Transportation and Infrastructure` = c("transportation", "infrastructure", "road", "bridge", "transit", "public work", "highway", "rail", "airport", "construction", "logistic", "traffic", "metro", "urban", "subway"),
+    `Culture and Recreation` = c("culture", "arts", "religion", "sport", "recreation", "entertainment", "museum", "festival", "event", "music", "film", "heritage", "theater", "game", "tourism", "leisure"),
+    `Other / Uncategorized` = c("miscellaneous", "general", "other", "NA")
+)
+
+# Function to classify each post based on keywords
+classify_policy_area <- function(text) {
+    for (category in names(keywords)) {
+        if (any(str_detect(text, paste(keywords[[category]], collapse = "|")))) {
+            return(category)
+        }
+    }
+    return("Other / Uncategorized")
+}
+
+# Apply classification function to each post, combining title and selftext
+myPosts[, policy_area := sapply(paste(title, selftext), classify_policy_area)]
+
+# Step 2: Summarize Counts by Policy Area
+policy_counts <- myPosts[, .N, by = policy_area]
+print(policy_counts)
+
+```
+
