@@ -143,13 +143,13 @@ Implemented two approaches to identify prevalent topics within the comments:
     
 ## 1. Emotional Insights  
 
-![](emotionsDistribution.png){width=50%}
-![](emotionsDistributionConf.png){width=50%}
+![](report_images/emotionsDistribution.png){width=50%}
+![](report_images/emotionsDistributionConf.png){width=50%}
     
 ## 2. Sentiment Analysis
     
-![](sentimentIntensity.png){width=50%}
-![](sentimentIntensityConf.png){width=50%}
+![](report_images/sentimentIntensity.png){width=50%}
+![](report_images/sentimentIntensityConf.png){width=50%}
 
 - **Emotion Counts:** Neutral emotions dominate, followed by Disgust and Surprise.
 - **Sentiment Counts:** Negative and Neutral sentiments are prevalent, with fewer Positive sentiments.
@@ -158,8 +158,8 @@ Implemented two approaches to identify prevalent topics within the comments:
 
 ## 3. Political Leaning
     
-![](politicalLeaning.png){width=45%}
-![](politicalLeaningConf.png){width=45%}
+![](report_images/politicalLeaning.png){width=45%}
+![](report_images/politicalLeaningConf.png){width=45%}
 
 - **Centrist Dominance:** A large proportion of comments are from centrists, with conservatives being the next largest group.
 - **Heatmaps and Crosstabs:** Demonstrate the association between political leaning and both sentiment intensity and emotions, reinforcing the significant Chi-squared test results.
@@ -187,8 +187,8 @@ Implemented two approaches to identify prevalent topics within the comments:
   - **Cluster 8:** people, don, just, like, trump, think, right, vote, biden, know
   - **Cluster 9:** deleted, removed, reddit, zero, follow, giving, given, giphy, gif, getting
   
-![](kMeans.png){width=50%}
-![](kMeansConf.png){width=50%}
+![](report_images/kMeans.png){width=50%}
+![](report_images/kMeansConf.png){width=50%}
     
 
     
@@ -281,16 +281,16 @@ knitr::include_graphics("corrConf.png")
 - **KMeans Clustering Political Leanings:** Clusters show interesting leanings, with clear conservative concentration in **cluster 8**.  
 
 
-![](tsneKmeans.png){width=50%}
-![](tsneKmeansPoliticalLeaning.png){width=50%}
+![](report_images/tsneKmeans.png){width=50%}
+![](report_images/tsneKmeansPoliticalLeaning.png){width=50%}
 
 -- **KMeans Clustering Emotion:** There are differences in emotion on the topics identified so far, but we'll have to go deeper into statistical testing or perhaps 3-D visualization to more clearly represent and explore.  
 
 -- **BERTopic Modeling:** When filtering out outliers and 'others', we start to get some clear clusters developing.  This is prime for exploration and identification of political groups/interests, especially when combined with the `policy text` subjects from the `bill_info` for the next phase.  
 
 
-![](tsneKmeansEmotion.png){width=50%}
-![](tsneBertTopic.png){width=50%}
+![](report_images/tsneKmeansEmotion.png){width=50%}
+![](report_images/tsneBertTopic.png){width=50%}
 
 
 ### Time-Series Trends  
@@ -302,8 +302,8 @@ knitr::include_graphics("kmeansTime.png")
 ```
 
 
-![](politicalLeaningTime.png){width=50%}
-![](sentimentTime.png){width=50%}
+![](report_images/politicalLeaningTime.png){width=50%}
+![](report_images/sentimentTime.png){width=50%}
 
 
 ### Wordclouds  
