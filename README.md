@@ -1,5 +1,7 @@
 # Social_Media_Processing
 Repo for Social Media Data Collection and Initial Processing
+- Updated 11/13/24
+
 
 ### Reddit_Data_Collection  
 - has data collection scripts for the top 600 Posts in each State subreddit, and all of their comments.  
