@@ -15,7 +15,7 @@ header-includes:
   - \pagestyle{fancy}
   - \fancyhf{}
   - \rhead{Getting Started Guide}
-  - \lhead{Version 1.0}
+  - \lhead{Version 1.1}
   - \cfoot{\thepage}
   - \usepackage{float}
 ---
@@ -80,7 +80,7 @@ knitr::include_graphics("label.jpg")
 
 - **Review Content:** Carefully read the **Title**, **Image**, and **Contents** (if available) of each post or comment.  
 
-- **Select a Policy Area:** Click on the policy area that best fits the content. **Only one policy area is allowed per post**, so choose the most appropriate one.  
+- **Select a Policy Area:** Click on the policy areas that best fits the content. **You may choose multiple policy areas**.  
 
 - **Submit:** After selecting the policy area, click **"Submit"** to move to the next task. 
 
